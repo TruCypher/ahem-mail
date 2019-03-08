@@ -5,7 +5,7 @@ const express = require('express');
 const router = express.Router();
 const ObjectID = require('mongodb').ObjectID;
 const logger = require('./logger');
-const auth = require('./auth');
+//const auth = require('./auth');
 const jwt = require('jsonwebtoken');
 const mailTester = require('./mailTester');
 
@@ -49,33 +49,33 @@ router.get('/emailCount', (req, res, next) => {
 /**
  * get a token
  */
-router.post('/auth/token', (req, res, next) => {
-  // if a token exists for the ip and is not expired
-  req.db.collection('tokens').findOne({'ip': req.ip},
-    function (err, result) {
-      if (err) {
-        return res.status(500).json({error: err.message});
-      }
-      if (result) {
-        jwt.verify(result.token, req.properties.jwtSecret, function(err, decoded) {
-          if (err) {
-            logger.info('failed to verify token... renewing.');
-            return auth.createNewToken(req, res);
-          } else {
-            logger.info('Re-using token');
-            res.status(200).json({
-              success: true,
-              token: result.token
-            });
-            return;
-          }
-        });
-
-      } else {
-        return auth.createNewToken(req, res);
-      }
-    });
-});
+// router.post('/auth/token', (req, res, next) => {
+//     // if a token exists for the ip and is not expired
+//     req.db.collection('tokens').findOne({'ip': req.ip},
+//       function (err, result) {
+//         if (err) {
+//           return res.status(500).json({error: err.message});
+//         }
+//         if (result) {
+//           jwt.verify(result.token, req.properties.jwtSecret, function(err, decoded) {
+//             if (err) {
+//               logger.info('failed to verify token... renewing.');
+//               return auth.createNewToken(req, res);
+//             } else {
+//               logger.info('Re-using token');
+//               res.status(200).json({
+//                 success: true,
+//                 token: result.token
+//               });
+//               return;
+//             }
+//           });
+  
+//         } else {
+//           return auth.createNewToken(req, res);
+//         }
+//       });
+//   });
 
 
 /**
@@ -109,10 +109,10 @@ router.get('/mailbox/:mailbox/email/:emailId/attachments/:filename', (req, res) 
 
 
 // route middleware to verify a token
-router.use(auth.verifyToken);
+//router.use(auth.verifyToken);
 
 // route middleware to increment api counter when an api is used to make a call
-router.use(auth.increaseApiCounter);
+//router.use(auth.increaseApiCounter);
 
 /**
  * returns a list of mailbox names starting with the req.body.prefix

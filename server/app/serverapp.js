@@ -23,11 +23,11 @@ const path = require('path'),
   auth = require('./auth');
 
 const DIST_FOLDER = path.join(process.cwd() , 'dist');
-logger.debug(DIST_FOLDER);
+logger.debug(DIST_FOLDER + "tesing testing tesign");
 
 function start(properties, db) {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
-  app.set('view engine', 'html');
+  //app.set('view engine', 'html');
   app.use(express.static(path.join(DIST_FOLDER, "browser")));
   app.set('views', path.join(DIST_FOLDER, "browser"));
 
@@ -61,14 +61,14 @@ app.get('*.*', express.static(path.join(DIST_FOLDER, "browser")));
 
 // All regular browser angular folder
   app.get('*', (req, res) => {
-    res.render('index', { req });
+    res.sendfile(path.join('dist','browser','index.html'), { req });
   });
 
-// error handler
-  app.use(function (err, req, res, next) {
+ //error handler
+	app.use(function (err, req, res, next) {
     logger.error(err.message);
     res.status(500).send({error: err.name + ' | ' + err.message});
-  });
+ });
 
 // delete emails every interval
   setInterval(function () {

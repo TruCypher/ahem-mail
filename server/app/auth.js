@@ -8,35 +8,37 @@ const logger = require('./logger');
 const ObjectID = require('mongodb').ObjectID;
 
 
-function createNewToken(req, res) {
-  const payload = {
-    ip: req.ip,
-    maxAllowedApiCalls: req.properties.maxAllowedApiCalls
-  };
-
-  logger.info('creating new token');
-  const token = jwt.sign(payload, req.properties.jwtSecret, {
-    expiresIn: req.properties.jwtExpiresIn
-  });
-  //insert in db
-  req.db.collection('tokens').findOneAndReplace( {'ip': req.ip}, {'ip': req.ip, 'token': token, currentApiCount: 0}, { upsert: true },
-    function (err, result) {
-      if (err) {
-        logger.info(err)
-        return res.status(500).json({error: err});
-      } else {
-        return res.status(200).json({
-          success: true,
-          token: token
-        });
-      }
-    });
-}
+ function createNewToken(req, res) {
+     const payload = {
+       ip: req.ip,
+       maxAllowedApiCalls: req.properties.maxAllowedApiCalls
+     };
+  
+     logger.info('creating new token');
+     const token = jwt.sign(payload, req.properties.jwtSecret, {
+       expiresIn: req.properties.jwtExpiresIn
+     });
+     //insert in db
+     req.db.collection('tokens').findOneAndReplace( {'ip': req.ip}, {'ip': req.ip, 'token': token, currentApiCount: 0}, { upsert: true },
+       function (err, result) {
+         if (err) {
+           logger.info(err)
+           return res.status(500).json({error: err});
+         } else {
+           return res.status(200).json({
+             success: true,
+             token: token
+           });
+         }
+       });
+   }
 
 function verifyToken(req, res, next) {
   // check header or url parameters or post parameters for token
+   next();
   const token = req.headers['Authorization'] || req.headers.authorization;
   // decode token
+  
   if (token !== undefined && token.split(' ')[0] === 'Bearer') {
 
     // verifies secret and checks exp
@@ -49,8 +51,6 @@ function verifyToken(req, res, next) {
         req.db.collection('tokens').findOne( {'ip': decoded.ip}, function (err, result) {
           if(err) {
             return res.status(500).json({error: err});
-          } else if(result.currentApiCount >= decoded.maxAllowedApiCalls) {
-            return res.status(403).send({ success: false, message: 'API Quote Exceeded' });
           } else {
             // if everything is good, save to request for use in other routes
             req.decoded = decoded;
@@ -72,6 +72,7 @@ function verifyToken(req, res, next) {
 }
 
 function increaseApiCounter(req, res, next) {
+	next();
   req.db.collection('tokens').updateOne( {'ip': req.decoded.ip}, {$inc: {currentApiCount: 1}},
     function (err, result) {
       if (err) {
@@ -83,7 +84,7 @@ function increaseApiCounter(req, res, next) {
     });
 }
 
-module.exports.createNewToken = createNewToken;
+//module.exports.createNewToken = createNewToken;
 module.exports.verifyToken = verifyToken;
 module.exports.increaseApiCounter = increaseApiCounter;
 
